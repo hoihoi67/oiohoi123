@@ -1,0 +1,79 @@
+{
+  "giveaways": {
+    "1536268804261158915": {
+      "id": "1536268804261158915",
+      "channelId": "1528513259164926002",
+      "guildId": "1408338263764369448",
+      "prize": "test",
+      "winnersCount": 1,
+      "endsAt": 1786345725193,
+      "image": "https://www.image2url.com/r2/default/images/1786345139850-0ed8ac70-472a-4c47-bfeb-4ac43d8aad35.png",
+      "participants": [],
+      "ended": true,
+      "winners": []
+    },
+    "1536268806190661683": {
+      "id": "1536268806190661683",
+      "channelId": "1528513259164926002",
+      "guildId": "1408338263764369448",
+      "prize": "test",
+      "winnersCount": 1,
+      "endsAt": 1786345725193,
+      "image": "https://www.image2url.com/r2/default/images/1786345139850-0ed8ac70-472a-4c47-bfeb-4ac43d8aad35.png",
+      "participants": [],
+      "ended": true,
+      "winners": []
+    },
+    "1541013308914540576": {
+      "id": "1541013308914540576",
+      "channelId": "1539171498449961012",
+      "guildId": "1539171496621117440",
+      "prize": "k",
+      "winnersCount": 1,
+      "endsAt": 1787476723171,
+      "image": "https://media.discordapp.net/attachments/1539254501444292659/1541002254675611768/53fb768c3c1e4d2d8f63a1528f583d89.gif?ex=6a8c01af&is=6a8ab02f&hm=3f979f89e3bf3b4da4ac00a03e6ff5808a6001766b9d276f0ba7a357d175b81a&=",
+      "participants": [
+        "1517033572681125929"
+      ],
+      "ended": true,
+      "winners": [
+        "1517033572681125929"
+      ]
+    },
+    "1541014420904222751": {
+      "id": "1541014420904222751",
+      "channelId": "1539171498449961012",
+      "guildId": "1539171496621117440",
+      "prize": "123",
+      "winnersCount": 1,
+      "endsAt": 1787477168285,
+      "image": "https://media.discordapp.net/attachments/1539254501444292659/1541002254675611768/53fb768c3c1e4d2d8f63a1528f583d89.gif?ex=6a8c01af&is=6a8ab02f&hm=3f979f89e3bf3b4da4ac00a03e6ff5808a6001766b9d276f0ba7a357d175b81a&=",
+      "participants": [],
+      "ended": true,
+      "winners": []
+    },
+    "1541014997667422209": {
+      "id": "1541014997667422209",
+      "channelId": "1539171498449961012",
+      "guildId": "1539171496621117440",
+      "prize": "12",
+      "winnersCount": 1,
+      "endsAt": 1787477305699,
+      "image": "https://media.discordapp.net/attachments/1539254501444292659/1541002254675611768/53fb768c3c1e4d2d8f63a1528f583d89.gif?ex=6a8c01af&is=6a8ab02f&hm=3f979f89e3bf3b4da4ac00a03e6ff5808a6001766b9d276f0ba7a357d175b81a&=",
+      "participants": [],
+      "ended": true,
+      "winners": []
+    },
+    "1542459264445055057": {
+      "id": "1542459264445055057",
+      "channelId": "1539171499192356962",
+      "guildId": "1539171496621117440",
+      "prize": "test",
+      "winnersCount": 1,
+      "endsAt": 1787824945581,
+      "image": "https://media.discordapp.net/attachments/1539254501444292659/1541002254675611768/53fb768c3c1e4d2d8f63a1528f583d89.gif?ex=6a8c01af&is=6a8ab02f&hm=3f979f89e3bf3b4da4ac00a03e6ff5808a6001766b9d276f0ba7a357d175b81a",
+      "participants": [],
+      "ended": false
+    }
+  }
+}

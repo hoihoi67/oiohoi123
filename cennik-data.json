@@ -1,0 +1,12 @@
+{
+  "categories": {
+    "test": {
+      "key": "test",
+      "label": "test",
+      "title": "test",
+      "description": "nwm",
+      "emoji": "<:like:1542441179881144350>",
+      "content": "test"
+    }
+  }
+}
