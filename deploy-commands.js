@@ -190,6 +190,25 @@ function createSettlementPanelCommand() {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
 }
 
+function createRulesPanelCommand() {
+  return new SlashCommandBuilder()
+    .setName("regulamin-panel")
+    .setDescription("Wysyła panel regulaminu Crystal Shop.")
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .addStringOption((option) =>
+      option
+        .setName("obrazek-link")
+        .setDescription("Link do obrazka/baneru panelu regulaminu.")
+        .setRequired(false),
+    )
+    .addAttachmentOption((option) =>
+      option
+        .setName("obrazek")
+        .setDescription("Opcjonalny obrazek/baner panelu regulaminu.")
+        .setRequired(false),
+    );
+}
+
 const commands = [
   new SlashCommandBuilder()
     .setName("ticket-panel")
@@ -259,6 +278,7 @@ const commands = [
   createCennikCommand(),
   createRozliczeniaCommand(),
   createSettlementPanelCommand(),
+  createRulesPanelCommand(),
   createLegitCheckCommand(),
   createResetSaldoCommand(),
   new SlashCommandBuilder()
@@ -279,7 +299,7 @@ async function main() {
   const rest = new REST({ version: "10" }).setToken(DISCORD_TOKEN);
   await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands });
 
-  console.log("Zarejestrowano komendy /ticket-panel, /drop-panel, /konkurs, /zapro, /legit, /blacklista, /bl, /cennik, /rozliczenia, /panel-rozliczen, /lc, /reset-saldo, /close i /claim.");
+  console.log("Zarejestrowano komendy /ticket-panel, /drop-panel, /konkurs, /zapro, /legit, /blacklista, /bl, /cennik, /rozliczenia, /panel-rozliczen, /regulamin-panel, /lc, /reset-saldo, /close i /claim.");
 }
 
 main().catch((error) => {

@@ -73,7 +73,8 @@
       "endsAt": 1787824945581,
       "image": "https://media.discordapp.net/attachments/1539254501444292659/1541002254675611768/53fb768c3c1e4d2d8f63a1528f583d89.gif?ex=6a8c01af&is=6a8ab02f&hm=3f979f89e3bf3b4da4ac00a03e6ff5808a6001766b9d276f0ba7a357d175b81a",
       "participants": [],
-      "ended": false
+      "ended": true,
+      "winners": []
     }
   }
 }

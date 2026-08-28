@@ -212,7 +212,7 @@ client.on(Events.InviteDelete, async (invite) => {
 client.on(Events.MessageCreate, async (message) => {
   if (message.author.bot) return;
 
-  if (["!hxw1", "!hxw2", "!hxw3", "!stickiLegitki", "!legit"].includes(message.content)) {
+  if (["!hxw1", "!hxw2", "!hxw3", "!stickiLegitki", "!legit", "!regulamin"].includes(message.content)) {
     try {
       if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
         await message.reply("Tylko administracja moze wyslac ten panel.");
@@ -227,6 +227,8 @@ client.on(Events.MessageCreate, async (message) => {
         await sendOpinionPanel(message.channel);
       } else if (message.content === "!stickiLegitki") {
         await refreshLegitSticky(message.channel);
+      } else if (message.content === "!regulamin") {
+        await sendRulesPanel(message.channel);
       } else {
         await sendLegitReactionPanel(message.channel);
       }
@@ -328,6 +330,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
       return;
     }
 
+    if (interaction.isChatInputCommand() && interaction.commandName === "regulamin-panel") {
+      await sendRulesPanelCommand(interaction);
+      return;
+    }
+
     if (interaction.isChatInputCommand() && interaction.commandName === "reset-saldo") {
       await resetSettlementBalance(interaction);
       return;
@@ -390,6 +397,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     if (interaction.isButton() && interaction.customId.startsWith("settlement_")) {
       await handleSettlementPanelButton(interaction);
+      return;
+    }
+
+    if (interaction.isButton() && interaction.customId.startsWith("rules_")) {
+      await handleRulesButton(interaction);
       return;
     }
 
@@ -501,6 +513,13 @@ function getInteractionErrorMessage(interaction) {
 
   if (interaction.isButton?.() && interaction.customId?.startsWith("settlement_")) {
     return "Cos poszlo nie tak przy panelu rozliczen.";
+  }
+
+  if (
+    (interaction.isChatInputCommand?.() && interaction.commandName === "regulamin-panel") ||
+    (interaction.isButton?.() && interaction.customId?.startsWith("rules_"))
+  ) {
+    return "Cos poszlo nie tak przy panelu regulaminu.";
   }
 
   if (
@@ -1309,6 +1328,208 @@ function normalizeSellerName(value) {
     .replace(/^@/, "")
     .trim()
     .toLowerCase();
+}
+
+const rulesPages = [
+  {
+    title: "1. Zasady ogólne",
+    content: [
+      "1.1. Administracja może odmówić obsługi lub usunąć użytkownika, który łamie regulamin.",
+      "1.2. Regulamin może zostać zmieniony w każdej chwili, bez obowiązku informowania użytkowników.",
+      "1.3. Korzystając z serwera i robiąc zakupy, akceptujesz ten regulamin.",
+    ],
+  },
+  {
+    title: "2. Zakupy",
+    content: [
+      "2.1. Administracja nie odpowiada za błędne dane podane przy zakupie.",
+      "2.2. Wszystkie zakupy są ostateczne, chyba że wcześniej ustalono inaczej.",
+      "2.3. Płatności PayPal przyjmujemy tylko w opcji „Friends & Family”.",
+      "2.4. Jeśli dostawca zawiedzie, zwracamy 10–30% wartości zamówienia.",
+      "2.5. Realizacja zamówienia trwa do 6 godzin.",
+      "2.6. Na social media (lajki, obserwacje, wyświetlenia) gwarancję masz tylko po wcześniejszym ustaleniu.",
+      "2.7. Dane użytkowników przetwarzamy tylko na potrzeby realizacji zamówienia.",
+    ],
+  },
+  {
+    title: "3. Produkty",
+    content: [
+      "3.1. Konta do gier domyślnie bez gwarancji, chyba że ustalisz inaczej przed zakupem.",
+      "3.2. Nie sprzedajemy kont z dożywotnim dostępem („lifetime”).",
+      "3.3. W ofercie mamy konta do gier, Nitro Boost, social media i streamingi.",
+      "3.4. Na konta streamingowe (Netflix itp.) gwarancja trwa tyle dni, ile wykupisz.",
+    ],
+  },
+  {
+    title: "4. Nitro Boost",
+    content: [
+      "4.1. Masz 2 godziny na odebranie Nitro od momentu zakupu.",
+      "4.2. Illegal Nitro nie ma gwarancji przy cofnięciu.",
+      "4.3. Legal Nitro ma gwarancję przy cofnięciu.",
+      "4.4. Jeśli cofniemy Nitro po aktywacji:",
+      "     4.4.1. Illegal – bez wymiany",
+      "     4.4.2. Legal – wymieniamy zgodnie z gwarancją",
+    ],
+  },
+  {
+    title: "5. Legit Check i reklamacje",
+    content: [
+      "5.1. Masz 24 godziny na dodanie legit checka po zakupie.",
+      "5.2. Brak legit checka lub jego usunięcie oznacza utratę gwarancji.",
+      "5.3. Negatywne opinie lub legit checki bez powodu to ban na 7 dni.",
+      "5.4. Reklamacje przyjmujemy tylko przez system ticketów.",
+      "5.5. Bez legit checka reklamacji nie rozpatrujemy.",
+    ],
+  },
+  {
+    title: "6. Bezpieczeństwo",
+    content: [
+      "6.1. Administracja nie odpowiada za prywatne transakcje między użytkownikami a członkami zespołu.",
+      "6.2. Jeśli produkt cofnięto z twojej winy (np. udostępniłeś dane innym), nie ponosimy odpowiedzialności.",
+      "6.3. Zapewniamy ochronę transakcji tylko do 75.00 PLN.",
+    ],
+  },
+  {
+    title: "7. Zachowanie na serwerze",
+    content: [
+      "7.1. Podczas zakupów, reklamacji i pytań wymagana jest kultura i szacunek.",
+      "7.2. Nie reklamuj swoich serwerów, usług ani sklepów bez zgody administracji.",
+      "7.3. Prowokacje, spam, hejt i trolling skutkują ostrzeżeniami lub banem.",
+      "7.4. Jeśli nie prowadzimy rekrutacji, nie twórz ticketów z prośbami o dołączenie do teamu — takie zgłoszenia będą zamykane.",
+      "7.5. Administrator ma zawsze rację.",
+    ],
+  },
+];
+
+async function sendRulesPanelCommand(interaction) {
+  const image =
+    interaction.options.getString("obrazek-link") ||
+    interaction.options.getAttachment("obrazek")?.url ||
+    config.rulesImageUrl ||
+    config.panelImageUrl;
+
+  await sendRulesPanel(interaction.channel, image);
+  await interaction.reply({
+    content: "Panel regulaminu został wysłany.",
+    ephemeral: true,
+  });
+}
+
+async function sendRulesPanel(channel, image = config.rulesImageUrl || config.panelImageUrl) {
+  const problemUrl = `https://discord.com/channels/${channel.guild.id}/${config.rulesProblemChannelId || "1472005722886897664"}`;
+  const buttons = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId("rules_open")
+      .setEmoji(ce("lupa"))
+      .setLabel("Zapoznaj się z regulaminem")
+      .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setEmoji(ce("nie"))
+      .setLabel("Zgłoś problem")
+      .setStyle(ButtonStyle.Link)
+      .setURL(problemUrl),
+  );
+
+  const panel = new ContainerBuilder()
+    .setAccentColor(config.panelColor)
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        [
+          "``` 🖤 ・ Crystal Shop × REGULAMIN```",
+          "",
+          `${et("kursor")} ・ Bycie na **naszym serwerze** oznacza **automatyczną akceptację naszego regulaminu**.`,
+          `${et("kursor")} ・ W razie jakichkolwiek **problemów** lub **pytań**, możesz od razu się do nas **zgłosić**.`,
+        ].join("\n"),
+      ),
+    )
+    .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
+    .addActionRowComponents(buttons);
+
+  const normalizedImage = normalizeImageUrl(image);
+  if (normalizedImage) {
+    panel
+      .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
+      .addMediaGalleryComponents(
+        new MediaGalleryBuilder().addItems(
+          new MediaGalleryItemBuilder().setURL(normalizedImage),
+        ),
+      );
+  }
+
+  panel
+    .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(`${et("serce")} © 2026 Crystal Shop × Regulamin`),
+    );
+
+  await channel.send({
+    components: [panel],
+    flags: MessageFlags.IsComponentsV2,
+  });
+}
+
+async function handleRulesButton(interaction) {
+  if (interaction.customId === "rules_open") {
+    await interaction.reply({
+      components: [createRulesPagePanel(0)],
+      flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
+    });
+    return;
+  }
+
+  const match = interaction.customId.match(/^rules_(prev|next):(\d+)$/);
+  if (!match) {
+    await interaction.reply({
+      content: "Nie znaleziono tej strony regulaminu.",
+      ephemeral: true,
+    });
+    return;
+  }
+
+  const currentPage = Number(match[2]);
+  const nextPage = match[1] === "next" ? currentPage + 1 : currentPage - 1;
+  const safePage = Math.max(0, Math.min(rulesPages.length - 1, nextPage));
+
+  await interaction.update({
+    components: [createRulesPagePanel(safePage)],
+    flags: MessageFlags.IsComponentsV2,
+  });
+}
+
+function createRulesPagePanel(pageIndex) {
+  const page = rulesPages[pageIndex];
+  const buttons = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`rules_prev:${pageIndex}`)
+      .setLabel("← Poprzednia")
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(pageIndex === 0),
+    new ButtonBuilder()
+      .setCustomId(`rules_next:${pageIndex}`)
+      .setLabel("Następna →")
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(pageIndex === rulesPages.length - 1),
+  );
+
+  return new ContainerBuilder()
+    .setAccentColor(config.panelColor)
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        [
+          `\`\`\` 🖤 ・ Regulamin Crystal Shop - Strona ${pageIndex + 1}/${rulesPages.length}\`\`\``,
+          "",
+          `${et("kursor")} **${page.title}**`,
+          "",
+          page.content.join("\n"),
+        ].join("\n"),
+      ),
+    )
+    .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
+    .addActionRowComponents(buttons)
+    .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(`${et("serce")} © 2026 Crystal Shop × Regulamin`),
+    );
 }
 
 async function resolveSettlementChannel(guild) {
