@@ -242,6 +242,10 @@ client.on(Events.MessageCreate, async (message) => {
     return;
   }
 
+  if (await handleAntiLink(message)) {
+    return;
+  }
+
   if (message.channel.id === config.restockChannelId) {
     await handleRestockMessage(message);
     return;
@@ -288,7 +292,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
 
     if (interaction.isChatInputCommand() && interaction.commandName === "konkurs") {
-      await createGiveaway(interaction);
+      await handleGiveawayCommand(interaction);
       return;
     }
 
@@ -2020,6 +2024,32 @@ async function sendLegitSaleNotification(message) {
   });
 }
 
+async function handleAntiLink(message) {
+  if (!message.guild || !message.content) return false;
+  if (message.member?.permissions.has(PermissionFlagsBits.Administrator)) return false;
+  if (message.member?.permissions.has(PermissionFlagsBits.ManageMessages)) return false;
+  if (!containsBlockedLink(message.content)) return false;
+
+  await message.delete().catch((error) => {
+    console.error("Nie udalo sie usunac linku:", error.message);
+  });
+
+  const warning = await message.channel.send({
+    content: `${et("nie")} ${message.author}, linki są zablokowane na tym serwerze.`,
+    allowedMentions: { users: [message.author.id] },
+  }).catch(() => null);
+
+  if (warning) {
+    setTimeout(() => warning.delete().catch(() => null), 7000);
+  }
+
+  return true;
+}
+
+function containsBlockedLink(content) {
+  return /(?:https?:\/\/|www\.|discord\.gg\/|discord\.com\/invite\/|\.gg\/|[a-z0-9-]+\.(?:pl|com|net|org|gg|io|me|xyz|shop|store|dev|app|eu|co)(?:\/|\b))/i.test(content);
+}
+
 async function refreshLegitSticky(channel) {
   await deleteLegitStickyPanels(channel);
   await sendLegitStickyPanel(channel);
@@ -2940,6 +2970,32 @@ async function countCurrentInviteUses(guild, userId) {
     .reduce((total, invite) => total + (invite.uses || 0), 0);
 }
 
+async function handleGiveawayCommand(interaction) {
+  if (!canManageGiveaways(interaction.member)) {
+    await interaction.reply({
+      content: `Tylko administracja albo rola <@&${config.giveawayManagerRoleId}> może używać konkursów.`,
+      ephemeral: true,
+    });
+    return;
+  }
+
+  const subcommand = interaction.options.getSubcommand(false);
+
+  if (subcommand === "reroll") {
+    await rerollGiveaway(interaction);
+    return;
+  }
+
+  await createGiveaway(interaction);
+}
+
+function canManageGiveaways(member) {
+  return Boolean(
+    member?.permissions.has(PermissionFlagsBits.Administrator) ||
+    (config.giveawayManagerRoleId && member?.roles?.cache?.has(config.giveawayManagerRoleId)),
+  );
+}
+
 async function createGiveaway(interaction) {
   const prize = interaction.options.getString("nagroda");
   const winnersCount = interaction.options.getInteger("zwyciezcy");
@@ -3145,6 +3201,69 @@ async function endGiveaway(giveawayId) {
   } else {
     await channel.send(`${et("konkurs")} Konkurs **${giveaway.prize}** zakończony, ale nikt nie wziął udziału.`);
   }
+}
+
+async function rerollGiveaway(interaction) {
+  const giveawayId = interaction.options.getString("id-wiadomosci")?.trim();
+  const data = readGiveawayData();
+  const giveaway = data.giveaways[giveawayId];
+
+  if (!giveaway) {
+    await interaction.reply({
+      content: "Nie znalazłem konkursu o takim ID wiadomości.",
+      ephemeral: true,
+    });
+    return;
+  }
+
+  if (!giveaway.participants?.length) {
+    await interaction.reply({
+      content: "Ten konkurs nie ma uczestników, więc nie da się zrobić rerolla.",
+      ephemeral: true,
+    });
+    return;
+  }
+
+  const winners = pickWinners(giveaway.participants, giveaway.winnersCount);
+  giveaway.winners = winners;
+  giveaway.ended = true;
+  writeGiveawayData(data);
+
+  const channel = await interaction.guild.channels.fetch(giveaway.channelId).catch(() => null);
+  if (!channel?.send) {
+    await interaction.reply({
+      content: "Konkurs istnieje w danych, ale nie mogę znaleźć jego kanału.",
+      ephemeral: true,
+    });
+    return;
+  }
+
+  const message = await channel.messages.fetch(giveaway.id).catch(() => null);
+  if (message) {
+    await message.edit({
+      embeds: [],
+      components: [createGiveawayPanel({
+        prize: giveaway.prize,
+        winnersCount: giveaway.winnersCount,
+        endsAt: giveaway.endsAt,
+        participantsCount: giveaway.participants.length,
+        image: giveaway.image,
+        giveawayId: giveaway.id,
+        disabled: true,
+        winners,
+      })],
+      flags: MessageFlags.IsComponentsV2,
+    }).catch(() => null);
+  }
+
+  await channel.send(
+    `${et("konkurs")} Reroll konkursu! Nagroda: **${giveaway.prize}**. Nowi zwycięzcy: ${winners.map((winnerId) => `<@${winnerId}>`).join(", ")}`,
+  );
+
+  await interaction.reply({
+    content: `Zrobiono reroll konkursu \`${giveaway.id}\`.`,
+    ephemeral: true,
+  });
 }
 
 function pickWinners(participants, winnersCount) {
