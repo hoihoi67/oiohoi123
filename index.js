@@ -27,6 +27,7 @@ const {
   ThumbnailBuilder,
 } = require("discord.js");
 const config = require("./config.json");
+console.log("GIVEAWAY ROLE:", config.giveawayManagerRoleId);
 
 const dropDataPath = path.join(__dirname, "drop-data.json");
 const giveawayDataPath = path.join(__dirname, "giveaway-data.json");
