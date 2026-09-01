@@ -209,6 +209,48 @@ function createRulesPanelCommand() {
     );
 }
 
+function createGiveawayCommand() {
+  return new SlashCommandBuilder()
+    .setName("konkurs")
+    .setDescription("Zarządza konkursami Crystal Shop.")
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("stworz")
+        .setDescription("Tworzy panel konkursu.")
+        .addStringOption((option) =>
+          option
+            .setName("nagroda")
+            .setDescription("Nagroda w konkursie.")
+            .setRequired(true),
+        )
+        .addIntegerOption((option) =>
+          option
+            .setName("zwyciezcy")
+            .setDescription("Liczba zwyciezcow.")
+            .setMinValue(1)
+            .setMaxValue(20)
+            .setRequired(true),
+        )
+        .addStringOption((option) =>
+          option
+            .setName("czas")
+            .setDescription("Czas trwania, np. 30m, 2h, 1d.")
+            .setRequired(true),
+        ),
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("reroll")
+        .setDescription("Losuje ponownie zwycięzców zakończonego konkursu.")
+        .addStringOption((option) =>
+          option
+            .setName("id-wiadomosci")
+            .setDescription("ID wiadomości konkursu.")
+            .setRequired(true),
+        ),
+    );
+}
+
 const commands = [
   new SlashCommandBuilder()
     .setName("ticket-panel")
@@ -236,30 +278,7 @@ const commands = [
         .setDescription("Opcjonalny obrazek/baner panelu drop.")
         .setRequired(false),
     ),
-  new SlashCommandBuilder()
-    .setName("konkurs")
-    .setDescription("Tworzy panel konkursu.")
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-    .addStringOption((option) =>
-      option
-        .setName("nagroda")
-        .setDescription("Nagroda w konkursie.")
-        .setRequired(true),
-    )
-    .addIntegerOption((option) =>
-      option
-        .setName("zwyciezcy")
-        .setDescription("Liczba zwyciezcow.")
-        .setMinValue(1)
-        .setMaxValue(20)
-        .setRequired(true),
-    )
-    .addStringOption((option) =>
-      option
-        .setName("czas")
-        .setDescription("Czas trwania, np. 30m, 2h, 1d.")
-        .setRequired(true),
-    ),
+  createGiveawayCommand(),
   new SlashCommandBuilder()
     .setName("zapro")
     .setDescription("Pokazuje statystyki zaproszeń.")
